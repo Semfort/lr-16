@@ -87,3 +87,23 @@ class Product(models.Model):
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
 
+class Cart(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name = "Пользователь"
+    )
+    created_date = models.DateTimeField(
+        auto_now_add = True,
+        verbose_name = "Дата создания"
+    )
+
+    def __str__(self):
+        return f"Корзина пользователя {self.user.username}"
+
+    def total_cost(self):
+        return 0 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    class Meta:
+        verbose_name = "Корзина"
+        verbose_name_plural = "Корзины"
