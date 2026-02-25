@@ -1,8 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.contrib.auth.models import User
 
 # Create your models here.
-class Product_category(models.Model):
+class ProductCategory(models.Model):
     name = models.CharField(
         max_length = 50,
         verbose_name = "Название категории"
@@ -68,16 +69,16 @@ class Product(models.Model):
         validators=[MinValueValidator(0)]
     )
     category = models.ForeignKey(
-        Product_category,
+        ProductCategory,
         on_delete=models.CASCADE,
         verbose_name = "Категория",
-        related_name = "products"
+        related_name = "category_products"
     )
     manufacture = models.ForeignKey(
         Manufacturer,
         on_delete=models.CASCADE,
         verbose_name = "Производитель",
-        related_name = "products"
+        related_name = "manufacture_products"
     )
 
     def __str__(self):
@@ -102,8 +103,40 @@ class Cart(models.Model):
         return f"Корзина пользователя {self.user.username}"
 
     def total_cost(self):
-        return 0 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        return sum(item.item_cost() for item in self.items.all())
 
     class Meta:
         verbose_name = "Корзина"
         verbose_name_plural = "Корзины"
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(
+        Cart,
+        on_delete=models.CASCADE,
+        verbose_name = "Корзина",
+        related_name = "items"
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name = "Продукты",
+        related_name = "cart_item"
+    )
+    quantity = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name="Количество"
+    )
+    def clean(self):
+        super().clean()
+        if self.product and self.quantity > self.product.quantity_in_stock:
+            raise ValidationError(f"Доступно только {self.product.quantity_in_stock} товара")
+
+    def __str__(self):
+        return f"{self.product.name} {self.quantity}"
+    
+    def item_cost(self):
+        return self.product.price * self.quantity
+    
+    class Meta:
+        verbose_name = "Элемент корзины"
+        verbose_name_plural = "Элементы корзины"
