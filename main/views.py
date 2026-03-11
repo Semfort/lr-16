@@ -10,3 +10,6 @@ def catalog(request):
 
 def author(request):
     return HttpResponse("<h1>Автор: Лоел Семён 89ТП</h1>")
+
+def product_list():
+    
