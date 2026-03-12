@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог товаров</title>
+    <link href="https://jsdelivr.net" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Наш каталог</h1>
+
+    <!-- Блок фильтрации и поиска -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Поиск по тексту -->
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Поиск по названию или описанию..." value="{{ request.GET.search }}">
+                </div>
+                
+                <!-- Фильтр по категории -->
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="">Все категории</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"i" %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Фильтр по производителю -->
+                <div class="col-md-3">
+                    <select name="manufacture" class="form-select">
+                        <option value="">Все производители</option>
+                        {% for man in manufacturers %}
+                            <option value="{{ man.id }}" {% if request.GET.manufacture == man.id|stringformat:"i" %}selected{% endif %}>
+                                {{ man.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="col-md-2 d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Найти</button>
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-sm text-center">Сбросить</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Сетка товаров -->
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for product in products %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-white text-center py-5">Нет фото</div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ product.name }}</h5>
+                        <p class="card-text text-muted small">{{ product.description|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-info text-dark">{{ product.category.name }}</span>
+                            <span class="fw-bold fs-5">{{ product.price }} руб.</span>
+                        </div>
+                        <p class="mt-2 mb-0 small text-secondary">Производитель: {{ product.manufacture.name }}</p>
+                    </div>
+                    
+                    <div class="card-footer bg-white border-top-0 d-grid gap-2">
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                        
+                        {% if user.is_authenticated %}
+                            <form action="{% url 'add_to_cart' product.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success w-100 {% if product.quantity_in_stock == 0 %}disabled{% endif %}">
+                                    {% if product.quantity_in_stock > 0 %}
+                                        Добавить в корзину
+                                    {% else %}
+                                        Нет в наличии
+                                    {% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Войдите, чтобы купить</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-center py-5">Товары не найдены по вашему запросу.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>
