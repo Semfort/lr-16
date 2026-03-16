@@ -1,6 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+
 
 # Create your models here.
 class ProductCategory(models.Model):
@@ -111,7 +114,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
     cart = models.ForeignKey(

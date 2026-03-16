@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required  
-from .models import Product, CartItem
+from .models import Product, CartItem, ProductCategory, Manufacturer
 from django.contrib import messages
 
 # Create your views here.
@@ -14,6 +14,9 @@ def catalog(request):
 
 def author(request):
     return HttpResponse("<h1>Автор: Лоел Семён 89ТП</h1>")
+
+def cart(request):
+    return render(request, 'shop/cart.html', context)
 
 def product_list(request):
     products = Product.objects.all()
@@ -43,7 +46,7 @@ def product_list(request):
         'manufacturers': manufacturers,
     }
     
-    return render(request, 'main/product_list.html', context)
+    return render(request, 'shop/product_list.html', context)
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
@@ -52,11 +55,11 @@ def product_detail(request, pk):
         'product': product
     }
     
-    return render(request, 'main/product_detail.html', context)
+    return render(request, 'shop/product_detail.html', context)
 
 @login_required
-def add_to_cart(request, pk):
-    product = get_object_or_404(Product, id=pk)
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
     
     cart_item, created = CartItem.objects.get_or_create(
         user=request.user, 

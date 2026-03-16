@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Ваша корзина</title>
+    <link href="https://jsdelivr.net" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h1 class="mb-4">Корзина покупок</h1>
+
+    {% if cart_items %}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Товар</th>
+                        <th class="text-center">Цена</th>
+                        <th class="text-center">Количество</th>
+                        <th class="text-center">Итого</th>
+                        <th class="text-end pe-4">Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0">{{ item.product.name }}</h6>
+                                    <small class="text-muted">{{ item.product.manufacture.name }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">{{ item.product.price }} руб.</td>
+                        <td class="text-center" style="width: 150px;">
+                            <!-- Форма обновления количества -->
+                            <form action="{% url 'update_cart' item.id %}" method="post" class="d-flex justify-content-center">
+                                {% csrf_token %}
+                                <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                       min="1" max="{{ item.product.quantity_in_stock }}" 
+                                       class="form-control form-control-sm text-center me-1" style="width: 60px;">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">OK</button>
+                            </form>
+                        </td>
+                        <td class="text-center fw-bold text-primary">
+                            <!-- Мы используем метод item_cost, который должен быть в модели CartItem -->
+                            {{ item.item_cost }} руб.
+                        </td>
+                        <td class="text-end pe-4">
+                            <!-- Форма удаления -->
+                            <form action="{% url 'remove_from_cart' item.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Футер корзины с итоговой суммой -->
+        <div class="card-footer bg-white p-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <a href="{% url 'product_list' %}" class="btn btn-link text-decoration-none">← Продолжить покупки</a>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h4 class="mb-3">Общая стоимость: <span class="text-primary">{{ total_cost }} руб.</span></h4>
+                    <button class="btn btn-success btn-lg px-5">Оформить заказ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Если корзина пуста -->
+    <div class="text-center py-5 bg-white rounded shadow-sm">
+        <h3 class="text-muted">Ваша корзина пока пуста</h3>
+        <p>Самое время добавить в неё что-нибудь интересное!</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

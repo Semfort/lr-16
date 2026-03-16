@@ -1,13 +1,12 @@
 from django.urls import path, include
 from . import views
-
+                                                                                    
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('catalog/', views.catalog, name='catalog'),
-    path('catalog/<int:pk>/', views.catalog, name='product_detail')
+    path('', views.product_list, name='product_list'),
+    path('catalog/<int:pk>/', views.product_detail, name='product_detail'),
     path('author/', views.author, name='author'),
-    path('cart/', views.cart_detail, name='cart_detail'),
-    path('cart/add/<int:product_id>/', views.cart_add, name='cart_add'),
-    path('cart/update/<int:item_id>/', views.cart_update, name='cart_update'),
-    path('cart/remove/<int:item_id>/', views.cart_remove, name='cart_remove')
+    path('cart/', views.cart, name='cart_view'),
+    path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/update/<int:item_id>/', views.update_cart, name='update_cart'),
+    path('cart/remove/<int:pk>/', views.remove_from_cart, name='remove_from_cart')
 ]
