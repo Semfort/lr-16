@@ -4,6 +4,8 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required  
 from .models import Product, CartItem, ProductCategory, Manufacturer
 from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 
 # Create your views here.
 def index(request):
@@ -57,7 +59,7 @@ def product_detail(request, pk):
     
     return render(request, 'shop/product_detail.html', context)
 
-@login_required
+@login_required(login_url='/register/')
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     
@@ -95,7 +97,7 @@ def update_cart(request, item_id):
 
     return redirect('cart')
 
-@login_required
+@login_required(login_url='/register/')
 def remove_from_cart(request, pk):
     product = get_object_or_404(Product, id=pk)
     
@@ -107,3 +109,14 @@ def remove_from_cart(request, pk):
     cart_item.delete()
     
     return redirect('cart')
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('catalog')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})

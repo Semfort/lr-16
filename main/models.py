@@ -115,7 +115,8 @@ class Cart(models.Model):
 class CartItem(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True
     )
     cart = models.ForeignKey(
         Cart,
@@ -148,16 +149,16 @@ class CartItem(models.Model):
         verbose_name = "Элемент корзины"
         verbose_name_plural = "Элементы корзины"
 
-@login_required
-def cart_view(request):
-    cart, created = Cart.objects.get_or_create(user=request.user)
+    @login_required
+    def cart_view(request):
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        
+        cart_items = cart.items.select_related('product').all()
     
-    cart_items = cart.items.select_related('product').all()
-
-    context = {
-        'cart': cart,
-        'cart_items': cart_items,
-        'total_cost': cart.total_cost(),
-    }
-    
-    return render(request, 'main/cart.html', context)
+        context = {
+            'cart': cart,
+            'cart_items': cart_items,
+            'total_cost': cart.total_cost(),
+        }
+        
+        return render(request, 'main/cart.html', context)
