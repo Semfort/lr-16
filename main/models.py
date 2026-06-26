@@ -11,7 +11,7 @@ class ProductCategory(models.Model):
     name = models.CharField(
         max_length = 50,
         verbose_name = "Название категории"
-    )
+    )   
     description = models.TextField(
         blank = True,
         verbose_name = "Описание категории"

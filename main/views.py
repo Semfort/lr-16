@@ -10,6 +10,60 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from .forms import ExtendedUserCreationForm
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+from .models import ProductCategory, Manufacturer, Product, Cart, CartItem
+from .serializers import (
+    CategorySerializer, 
+    ManufacturerSerializer, 
+    ProductSerializer, 
+    CartSerializer, 
+    CartItemSerializer
+)
+class CategoryViewSet(viewsets.ModelViewSet):
+    """API для управления категориями (CRUD)"""
+    queryset = ProductCategory.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class ManufacturerViewSet(viewsets.ModelViewSet):
+    """API для управления производителями (CRUD)"""
+    queryset = Manufacturer.objects.all()
+    serializer_class = ManufacturerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    """API для управления товарами (CRUD)"""
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class CartViewSet(viewsets.ModelViewSet):
+    """API для управления корзиной пользователя"""
+    serializer_class = CartSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CartItemViewSet(viewsets.ModelViewSet):
+    """API для добавления, изменения и удаления товаров в корзине"""
+    serializer_class = CartItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__user=self.request.user)
+
+    def perform_create(self, serializer):
+        cart, _ = Cart.objects.get_or_create(user=self.request.user)
+        serializer.save(cart=cart)
 
 # Create your views here.
 def index(request):

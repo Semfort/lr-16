@@ -1,6 +1,16 @@
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
-                                                                                    
+
+router = DefaultRouter()
+
+router.register(r'categories', views.CategoryViewSet, basename='category')
+router.register(r'manufacturers', views.ManufacturerViewSet, basename='manufacturer')
+router.register(r'products', views.ProductViewSet, basename='product')
+router.register(r'carts', views.CartViewSet, basename='cart-api')
+router.register(r'cart-items', views.CartItemViewSet, basename='cartitem-api')
+
+
 urlpatterns = [
     path('', views.product_list, name='product_list'),
     path('catalog/<int:pk>/', views.product_detail, name='product_detail'),
@@ -11,5 +21,6 @@ urlpatterns = [
     path('cart/remove/<int:pk>/', views.remove_from_cart, name='remove_from_cart'),
     path('register/', views.register, name='register'),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('checkout/', views.checkout_view, name='checkout'), 
+    path('checkout/', views.checkout_view, name='checkout'),
+    path('api/v1/', include(router.urls)), 
 ]
