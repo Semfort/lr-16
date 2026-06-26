@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Заказ оформлен!</title>
+    <link href="https://jsdelivr.net" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5 text-center">
+        <div class="card shadow p-5 mx-auto" style="max-width: 600px;">
+            <h1 class="text-success mb-4">Заказ №{{ order.id }} успешно оформлен!</h1>
+            <p class="lead">Спасибо за покупку, <strong>{{ request.user.username }}</strong>.</p>
+            <p>Чек в формате Excel был сгенерирован и отправлен на ваш email: <span class="text-primary">{{ request.user.email }}</span>.</p>
+            <h4 class="my-4">Сумма к оплате: {{ total_cost }} руб.</h4>
+            <a href="/" class="btn btn-primary btn-lg mt-3">Вернуться на главную</a>
+        </div>
+    </div>
+</body>
+</html>

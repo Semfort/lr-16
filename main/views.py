@@ -1,11 +1,15 @@
+import openpyxl
+from io import BytesIO
+from django.core.mail import EmailMessage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required  
-from .models import Product, CartItem, ProductCategory, Manufacturer, Cart
+from .models import Product, CartItem, ProductCategory, Manufacturer, Cart, Order, OrderItem    
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+from .forms import ExtendedUserCreationForm
 
 # Create your views here.
 def index(request):
@@ -27,7 +31,7 @@ def cart(request):
     
     context = {
         'cart_items': cart_items,
-        'total_cost': total_cost, 
+        'total_cost': total_cost,   
     }
     
     return render(request, 'shop/cart.html', context)
@@ -122,11 +126,83 @@ def remove_from_cart(request, pk):
 
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = ExtendedUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user) 
             return redirect('product_list')
     else:
-        form = UserCreationForm()
+        form = ExtendedUserCreationForm()
+        
     return render(request, 'registration/register.html', {'form': form})
+
+@login_required(login_url='/register/')
+def checkout_view(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart_items = CartItem.objects.filter(cart=cart)
+    
+    if not cart_items.exists():
+        messages.error(request, "Ваша корзина пуста. Нечего оформлять!")
+        return redirect('cart_view')
+    
+    total_cost = sum(item.product.price * item.quantity for item in cart_items)
+
+    order = Order.objects.create(user=request.user, total_cost=total_cost)
+    
+    for item in cart_items:
+        OrderItem.objects.create(
+            order=order,
+            product=item.product,
+            quantity=item.quantity,
+            price=item.product.price
+        )
+        item.product.quantity_in_stock -= item.quantity
+        item.product.save()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"Чек Заказа {order.id}"
+    
+    # Заголовки таблицы Excel
+    ws.append([f"Чек по заказу №{order.id}", "", "", ""])
+    ws.append([f"Покупатель: {request.user.username}", "", "", ""])
+    ws.append(["Товар", "Цена за шт.", "Количество", "Итого"])
+    
+    for item in order.items.all():
+        row_total = item.price * item.quantity
+        ws.append([item.product.name, item.price, item.quantity, row_total])
+        
+    ws.append(["", "", "ОБЩАЯ СУММА:", total_cost])
+    
+    excel_file = BytesIO()
+    wb.save(excel_file)
+    excel_file.seek(0)
+    
+    subject = f"Ваш заказ №{order.id} успешно оформлен!"
+    body = f"Здравствуйте, {request.user.username}!\n\nБлагодарим за покупку. Ваш чек находится во вложении к этому письму."
+
+    email = EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=None, 
+        to=[request.user.email]
+    )
+
+    email.attach(
+        f"invoice_order_{order.id}.xlsx", 
+        excel_file.read(), 
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+    try:
+        email.send()
+    except Exception as e:
+        messages.warning(request, "Заказ оформлен, но письмо не отправлено.")
+    
+    cart_items.delete()
+    
+    context = {
+        'order': order,
+        'total_cost': total_cost
+    }
+    return render(request, 'shop/success.html', context)

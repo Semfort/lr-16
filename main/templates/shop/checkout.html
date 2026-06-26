@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заказа</title>
+    <link href="https://jsdelivr.net" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+
+                <a href="{% url 'cart_view' %}" class="btn btn-outline-secondary btn-sm mb-4">
+                    ← Вернуться в корзину
+                </a>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-4 rounded bg-white">
+                        <h2 class="card-title mb-4 text-center">Оформление заказа</h2>
+                        
+                        <form method="POST" action="{% url 'checkout' %}">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label font-weight-bold">Имя получателя</label>
+                                <input type="text" name="receiver_name" id="id_name" class="form-control" 
+                                       placeholder="Иван Иванов" required>
+                                <div class="form-text">Укажите имя того, кто будет забирать заказ.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label">Номер телефона</label>
+                                <input type="tel" name="receiver_phone" id="id_phone" class="form-control" 
+                                       placeholder="+7 (999) 123-45-67" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_address" class="form-label">Адрес доставки</label>
+                                <textarea name="delivery_address" id="id_address" class="form-control" rows="3" 
+                                          placeholder="Город, улица, дом, квартира" required></textarea>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <button type="submit" class="btn btn-success btn-lg w-100 shadow-sm">
+                                Подтвердить и оплатить заказ
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

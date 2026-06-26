@@ -54,7 +54,7 @@
                         </td>
                         <td class="text-end pe-4">
                             <!-- Форма удаления -->
-                            <form action="{% url 'remove_from_cart' item.product.id %}" method="post">
+                            <form action="{% url 'remove_from_cart' item.id %}" method="post">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
                             </form>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <h4 class="mb-3">Общая стоимость: <span class="text-primary">{{ total_cost }} руб.</span></h4>
-                    <button class="btn btn-success btn-lg px-5">Оформить заказ</button>
+                    <a href="{% url 'checkout' %}" class="btn btn-success btn-lg px-5">Оформить заказ</a>
                 </div>
             </div>
         </div>

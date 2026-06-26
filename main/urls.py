@@ -10,5 +10,6 @@ urlpatterns = [
     path('cart/update/<int:item_id>/', views.update_cart, name='update_cart'),
     path('cart/remove/<int:pk>/', views.remove_from_cart, name='remove_from_cart'),
     path('register/', views.register, name='register'),
-    path('accounts/', include('django.contrib.auth.urls')), 
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('checkout/', views.checkout_view, name='checkout'), 
 ]

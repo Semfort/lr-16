@@ -6,6 +6,8 @@
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
+<div class="mb-3">
+</div>
   <button type="submit">Зарегистрироваться</button>
 </form>
 <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
