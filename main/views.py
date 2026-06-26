@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required  
-from .models import Product, CartItem, ProductCategory, Manufacturer
+from .models import Product, CartItem, ProductCategory, Manufacturer, Cart
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -17,7 +17,19 @@ def catalog(request):
 def author(request):
     return HttpResponse("<h1>Автор: Лоел Семён 89ТП</h1>")
 
+@login_required(login_url='/register/')
 def cart(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+
+    cart_items = CartItem.objects.filter(cart=cart)
+    
+    total_cost = sum(item.product.price * item.quantity for item in cart_items)
+    
+    context = {
+        'cart_items': cart_items,
+        'total_cost': total_cost, 
+    }
+    
     return render(request, 'shop/cart.html', context)
 
 def product_list(request):
@@ -63,8 +75,9 @@ def product_detail(request, pk):
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     
+    cart, cart_created = Cart.objects.get_or_create(user=request.user)
     cart_item, created = CartItem.objects.get_or_create(
-        user=request.user, 
+        cart=cart,  
         product=product,
         defaults={'quantity': 1}
     )
@@ -72,17 +85,20 @@ def add_to_cart(request, product_id):
         cart_item.quantity += 1
         cart_item.save()
     
-    return redirect('cart')
+    return redirect('cart_view')
 
+@login_required(login_url='/register/')
 def update_cart(request, item_id):
-    cart_item = get_object_or_404(CartItem, id=item_id, user=request.user)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    
+    cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
 
     if request.method == 'POST':
         try:
             new_quantity = int(request.POST.get('quantity'))
         except (ValueError, TypeError):
             messages.error(request, "Некорректное число")
-            return redirect('cart')
+            return redirect('cart_view')
 
         if new_quantity > cart_item.product.quantity_in_stock:
             messages.error(
@@ -95,20 +111,14 @@ def update_cart(request, item_id):
             cart_item.quantity = new_quantity
             cart_item.save()
 
-    return redirect('cart')
+    return redirect('cart_view')
 
 @login_required(login_url='/register/')
 def remove_from_cart(request, pk):
-    product = get_object_or_404(Product, id=pk)
-    
-    cart_item = get_object_or_404(CartItem, id=pk, user=request.user)
-    if not created:
-        cart_item.quantity = 0
-        cart_item.save()
-    
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart_item = get_object_or_404(CartItem, id=pk, cart=cart)
     cart_item.delete()
-    
-    return redirect('cart')
+    return redirect('cart_view')
 
 def register(request):
     if request.method == 'POST':
@@ -116,7 +126,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('catalog')
+            return redirect('product_list')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})

@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
@@ -148,17 +149,3 @@ class CartItem(models.Model):
     class Meta:
         verbose_name = "Элемент корзины"
         verbose_name_plural = "Элементы корзины"
-
-    @login_required
-    def cart_view(request):
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        
-        cart_items = cart.items.select_related('product').all()
-    
-        context = {
-            'cart': cart,
-            'cart_items': cart_items,
-            'total_cost': cart.total_cost(),
-        }
-        
-        return render(request, 'main/cart.html', context)
