@@ -1,0 +1,120 @@
+:root {
+  --zona-green: #1a7a4a;
+  --zona-green-dark: #145c37;
+  --zona-green-light: #e8f5ee;
+  --zona-orange: #e8630a;
+  --zona-orange-light: #fff3ec;
+}
+
+/* Навбар */
+.navbar {
+  background: var(--zona-green) !important;
+  border-bottom: 3px solid var(--zona-orange);
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff !important;
+  letter-spacing: 1px;
+}
+
+.nav-link {
+  color: rgba(255,255,255,0.85) !important;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--zona-orange) !important;
+}
+
+/* Кнопки */
+.btn-primary {
+  background: var(--zona-green);
+  border-color: var(--zona-green);
+}
+
+.btn-primary:hover {
+  background: var(--zona-green-dark);
+  border-color: var(--zona-green-dark);
+}
+
+.btn-success {
+  background: var(--zona-orange);
+  border-color: var(--zona-orange);
+}
+
+.btn-success:hover {
+  background: #c9540a;
+  border-color: #c9540a;
+}
+
+/* Hero */
+.zona-hero {
+  background: linear-gradient(135deg, var(--zona-green) 0%, var(--zona-green-dark) 100%);
+  border-radius: 12px;
+  padding: 4rem 2rem;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 4px solid var(--zona-orange);
+}
+
+.zona-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.zona-hero p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Карточки товаров */
+.product-card {
+  border: none;
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.product-card .card-img-top {
+  height: 220px;
+  object-fit: cover;
+}
+
+.product-card .price {
+  color: var(--zona-green);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Футер */
+footer {
+  background: var(--zona-green-dark) !important;
+  border-top: 3px solid var(--zona-orange) !important;
+}
+
+/* Категории */
+.category-btn {
+  border: 2px solid var(--zona-green);
+  color: var(--zona-green);
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.category-btn:hover {
+  background: var(--zona-green);
+  color: #fff;
+}
+
+/* Бейджи */
+.badge.bg-success { background: var(--zona-green) !important; }

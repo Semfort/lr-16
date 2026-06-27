@@ -12,7 +12,8 @@ router.register(r'cart-items', views.CartItemViewSet, basename='cartitem-api')
 
 
 urlpatterns = [
-    path('', views.product_list, name='product_list'),
+    path('', views.index, name='index'),
+    path('catalog/', views.product_list, name='product_list'),
     path('catalog/<int:pk>/', views.product_detail, name='product_detail'),
     path('author/', views.author, name='author'),
     path('cart/', views.cart, name='cart_view'),
@@ -23,4 +24,6 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('checkout/', views.checkout_view, name='checkout'),
     path('api/v1/', include(router.urls)), 
+    path('api/products/', views.api_products, name='api_products'),
+    path('api/cart/add/', views.api_add_to_cart, name='api_add_to_cart'),
 ]

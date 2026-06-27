@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Ваша корзина</title>
-    <link href="https://jsdelivr.net" rel="stylesheet">
-</head>
-<body class="bg-light">
+{% extends 'base.html' %}
 
+{% block title %}Ваша корзина{% endblock %}
+
+{% block content %}
 <div class="container mt-5">
     <h1 class="mb-4">Корзина покупок</h1>
 
@@ -39,7 +35,6 @@
                         </td>
                         <td class="text-center">{{ item.product.price }} руб.</td>
                         <td class="text-center" style="width: 150px;">
-                            <!-- Форма обновления количества -->
                             <form action="{% url 'update_cart' item.id %}" method="post" class="d-flex justify-content-center">
                                 {% csrf_token %}
                                 <input type="number" name="quantity" value="{{ item.quantity }}" 
@@ -49,11 +44,9 @@
                             </form>
                         </td>
                         <td class="text-center fw-bold text-primary">
-                            <!-- Мы используем метод item_cost, который должен быть в модели CartItem -->
                             {{ item.item_cost }} руб.
                         </td>
                         <td class="text-end pe-4">
-                            <!-- Форма удаления -->
                             <form action="{% url 'remove_from_cart' item.id %}" method="post">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
@@ -64,7 +57,6 @@
                 </tbody>
             </table>
         </div>
-        <!-- Футер корзины с итоговой суммой -->
         <div class="card-footer bg-white p-4">
             <div class="row align-items-center">
                 <div class="col-md-6">
@@ -78,7 +70,6 @@
         </div>
     </div>
     {% else %}
-    <!-- Если корзина пуста -->
     <div class="text-center py-5 bg-white rounded shadow-sm">
         <h3 class="text-muted">Ваша корзина пока пуста</h3>
         <p>Самое время добавить в неё что-нибудь интересное!</p>
@@ -86,6 +77,4 @@
     </div>
     {% endif %}
 </div>
-
-</body>
-</html>
+{% endblock %}

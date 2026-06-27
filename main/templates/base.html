@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой Магазин{% endblock %}</title>
+    
+    <link href="https://jsdelivr.net" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <nav class="navbar navbar-expand-lg shadow-sm">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'index' %}">
+      ⚡ ZonaSporta
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'index' %}">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'product_list' %}">Каталог</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'cart_view' %}">🛒 Корзина</a>
+        </li>
+      </ul>
+      <div class="d-flex align-items-center">
+        {% if user.is_authenticated %}
+          <span class="text-light me-3">👋 <strong>{{ user.username }}</strong></span>
+          <form method="post" action="{% url 'logout' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-warning btn-sm">Выйти</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Войти</a>
+          <a href="{% url 'register' %}" class="btn btn-sm" style="background: var(--zona-orange); color:#fff;">Регистрация</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="container my-4 flex-grow-1">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+<footer class="text-light text-center py-3 mt-auto">
+  <div class="container">
+    <p class="mb-1 fw-bold">⚡ ZonaSporta</p>
+    <small class="text-light opacity-75">Лучшая спортивная одежда — для тех, кто движется вперёд</small>
+    <p class="mb-0 mt-1 opacity-50" style="font-size:0.8rem">&copy; 2026 Все права защищены</p>
+  </div>
+</footer>
+
+    <script src="https://jsdelivr.net"></script>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>

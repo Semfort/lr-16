@@ -12,7 +12,10 @@ from django.contrib.auth import login
 from .forms import ExtendedUserCreationForm
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
-from .models import ProductCategory, Manufacturer, Product, Cart, CartItem
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 from .serializers import (
     CategorySerializer, 
     ManufacturerSerializer, 
@@ -65,9 +68,70 @@ class CartItemViewSet(viewsets.ModelViewSet):
         cart, _ = Cart.objects.get_or_create(user=self.request.user)
         serializer.save(cart=cart)
 
+def api_products(request):
+    category_id = request.GET.get('category')
+    manufacturer_id = request.GET.get('manufacturer')
+    search = request.GET.get('search', '').strip()
+
+    products = Product.objects.all()
+    if category_id:
+        products = products.filter(category__id=category_id)
+    if manufacturer_id:
+        products = products.filter(manufacture__id=manufacturer_id)
+    if search:
+        products = products.filter(name__icontains=search)
+
+    data = []
+    for p in products:
+        data.append({
+            'id': p.id,
+            'name': p.name,
+            'price': str(p.price),
+            'category': p.category.name if p.category else '',
+            'image': p.image.url if p.image else None,
+            'quantity_in_stock': p.quantity_in_stock,
+            'detail_url': f'/catalog/{p.id}/',
+            'add_to_cart_url': f'/cart/add/{p.id}/',
+        })
+    return JsonResponse({'products': data})
+
+
+
+
 # Create your views here.
+@require_POST
+@login_required(login_url='/accounts/login/')
+def api_add_to_cart(request):
+    try:
+        body = json.loads(request.body)
+        product_id = body.get('product_id')
+        product = Product.objects.get(id=product_id)
+
+        if product.quantity_in_stock == 0:
+            return JsonResponse({'success': False, 'message': 'Товар отсутствует на складе'}, status=400)
+
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        if not created:
+            if cart_item.quantity < product.quantity_in_stock:
+                cart_item.quantity += 1
+                cart_item.save()
+            else:
+                return JsonResponse({'success': False, 'message': 'Достигнуто максимальное количество'}, status=400)
+
+        return JsonResponse({'success': True, 'message': f'«{product.name}» добавлен в корзину!'})
+    except Product.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Товар не найден'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Ошибка сервера'}, status=500)
+
 def index(request):
-    return HttpResponse("<h1><a href='http://127.0.0.1:8000/author/'>Великий творец сайта</a>  <a href='http://127.0.0.1:8000/catalog/'>Страница магазина</a></h1>")
+    products = Product.objects.order_by('-id')[:6]  # последние 6 товаров
+    categories = ProductCategory.objects.all()
+    return render(request, 'shop/index.html', {
+        'products': products,
+        'categories': categories,
+    })
 
 def catalog(request):
     return HttpResponse("<h1>Магазин спортивных товаров</h1>")
@@ -92,33 +156,32 @@ def cart(request):
 
 def product_list(request):
     products = Product.objects.all()
-
-    category_id = request.GET.get('category')
-    manufacture_id = request.GET.get('manufacture')
-    search_query = request.GET.get('search')
-
-    if category_id:
-        products = products.filter(category_id=category_id)
-
-    if manufacture_id:
-        products = products.filter(manufacture_id=manufacture_id)
-
-    if search_query:
-        products = products.filter(
-            Q(name__icontains=search_query) | 
-            Q(description__icontains=search_query)
-        )
-
     categories = ProductCategory.objects.all()
     manufacturers = Manufacturer.objects.all()
 
-    context = {
-        'products': products,
+    category_id = request.GET.get('category')
+    manufacturer_id = request.GET.get('manufacturer')
+    search = request.GET.get('search', '').strip()
+
+    if category_id:
+        products = products.filter(category__id=category_id)
+    if manufacturer_id:
+        products = products.filter(manufacture__id=manufacturer_id)
+    if search:
+        products = products.filter(name__icontains=search)
+
+    paginator = Paginator(products, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'shop/catalog.html', {
+        'page_obj': page_obj,
         'categories': categories,
         'manufacturers': manufacturers,
-    }
-    
-    return render(request, 'shop/product_list.html', context)
+        'selected_category': category_id,
+        'selected_manufacturer': manufacturer_id,
+        'search': search,
+    })
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
